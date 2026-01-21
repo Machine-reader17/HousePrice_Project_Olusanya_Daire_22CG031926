@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>California Housing Price Predictor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* California Warmth Theme */
+            --primary: #ea580c;
+            /* Orange 600 - Terracotta */
+            --primary-dark: #c2410c;
+            /* Orange 700 */
+            --secondary: #78716c;
+            /* Stone 500 */
+            --bg-color: #fff7ed;
+            /* Orange 50 */
+            --card-bg: #ffffff;
+            --text-main: #431407;
+            /* Orange 950 - Warm dark brown */
+            --text-secondary: #57534e;
+            /* Stone 600 */
+            --border-color: #fed7aa;
+            /* Orange 200 */
+            --error-bg: #fef2f2;
+            --error-text: #991b1b;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --radius: 0.75rem;
+            --shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.1), 0 2px 4px -2px rgba(234, 88, 12, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #fff;
+        }
+
+        legend {
+            font-weight: 600;
+            padding: 0 0.5rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        input,
+        select {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-clear {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-clear:hover {
+            color: var(--text-main);
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid transparent;
+        }
+
+        .alert-error {
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            border-left-color: var(--error-text);
+        }
+
+        .alert-success {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border-left-color: var(--success-text);
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>House Price Prediction</h1>
+            <p class="subtitle">Enter the details of the block group to predict the median house value.</p>
+        </header>
+
+        {% if error %}
+        <div class="alert alert-error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if prediction_text %}
+        <div class="alert alert-success">
+            <h2>Estimated Price: {{ prediction_text }}</h2>
+        </div>
+        {% endif %}
+
+        <form action="/predict" method="POST">
+
+            <fieldset>
+                <legend>Location Details</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="longitude">Longitude (e.g., -122.23)</label>
+                        <input type="number" step="any" id="longitude" name="longitude" required
+                            value="{{ input_data['longitude'] if input_data else '-122.23' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="latitude">Latitude (e.g., 37.88)</label>
+                        <input type="number" step="any" id="latitude" name="latitude" required
+                            value="{{ input_data['latitude'] if input_data else '37.88' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ocean_proximity">Ocean Proximity</label>
+                        <select id="ocean_proximity" name="ocean_proximity" required>
+                            <option value="<1H OCEAN">Less than 1H to Ocean</option>
+                            <option value="INLAND">Inland</option>
+                            <option value="NEAR OCEAN">Near Ocean</option>
+                            <option value="NEAR BAY">Near Bay</option>
+                            <option value="ISLAND">Island</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Housing Specs (Block Averages)</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="housing_median_age">Median House Age (Years)</label>
+                        <input type="number" step="any" id="housing_median_age" name="housing_median_age" required
+                            min="1" max="100" value="{{ input_data['housing_median_age'] if input_data else '41' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total_rooms">Total Rooms</label>
+                        <input type="number" step="any" id="total_rooms" name="total_rooms" required min="1"
+                            value="{{ input_data['total_rooms'] if input_data else '880' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total_bedrooms">Total Bedrooms</label>
+                        <input type="number" step="any" id="total_bedrooms" name="total_bedrooms" required min="1"
+                            value="{{ input_data['total_bedrooms'] if input_data else '129' }}">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Demographics</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="population">Population</label>
+                        <input type="number" step="any" id="population" name="population" required min="1"
+                            value="{{ input_data['population'] if input_data else '322' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="households">Households</label>
+                        <input type="number" step="any" id="households" name="households" required min="1"
+                            value="{{ input_data['households'] if input_data else '126' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="median_income">Median Income (Tens of Thousands)</label>
+                        <input type="number" step="any" id="median_income" name="median_income" required min="0"
+                            value="{{ input_data['median_income'] if input_data else '8.32' }}">
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="actions">
+                <button type="submit" class="btn-primary">Predict Price</button>
+                <div>
+                    <a href="/" class="btn-clear">Clear Form</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
