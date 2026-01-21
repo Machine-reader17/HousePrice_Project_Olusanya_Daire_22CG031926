@@ -1,0 +1,6 @@
+Name: Olusanya Oluwadairesayemi
+Matric Number: 22CG031926
+Machine Learning Algorithm Used: RandomForest Regressor
+Model persistence method used: Joblib
+Live URL of the hosted application: https://houseprice-project-olusanya-daire.onrender.com
+GitHub repository link: https://github.com/Machine-reader17/HousePrice_Project_Olusanya_Daire_22CG031926
